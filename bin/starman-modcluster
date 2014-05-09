@@ -1,0 +1,129 @@
+#!/usr/bin/env perl
+use strict;
+use Plack::Runner;
+
+
+sub version {
+    require Starman;
+    print "Starman $Starman::VERSION\n";
+}
+
+my $preload_app;
+		
+
+require Getopt::Long;
+Getopt::Long::Configure("no_ignore_case", "no_auto_abbrev", "pass_through");
+Getopt::Long::GetOptions(
+    "preload-app"      => \$preload_app,
+);
+
+my @args = (server => 'Starman::ModCluster', env => 'deployment', version_cb => \&version);
+if (!$preload_app) {
+    push @args, 'loader' => 'Delayed';
+}
+
+my @argv = @ARGV;
+
+my $runner = Plack::Runner->new(@args);
+$runner->parse_options(@argv);
+
+if ($runner->{loader} eq 'Restarter') {
+    warn <<WARN;
+!!
+!! Using restarter with -r or -R options is known to cause issues with process supervisor
+!! such as start_server, and it is STRONGLY discouraged to use with Starman. You have been warned.
+!!
+WARN
+}
+
+$runner->set_options(argv => \@argv);
+$runner->run;
+
+__END__
+
+=head1 NAME
+
+starman-modcluster - Starman launcher with mod_cluster support
+
+=head1 SYNOPSIS
+
+  starman-modcluster --mc-node-name=MyApp1 --mc-uri=http://127.0.0.1:6666 --mc-context="/myapp" --mc-alias="myapp1" --mc-host=127.0.0.1 
+
+=head1 OPTIONS
+
+=over 4
+
+=item --mc-uri (required)
+
+	--mc-uri http://modclusterserver.example.com:6666
+	
+mod_cluster address
+
+=item --mc-node-name (required)
+
+	--mc-node-name UniqueNameOfMyNode
+
+Specified unique name of you server instance, in mod_cluster it is equivalent to JvmRoute. Max site 80 characters
+
+=item --mc-context (required)
+
+	--mc-context /foo,/bar,/baz/foo
+	
+Contexts that your application can server.
+
+=item --mc-host (required)
+	
+	--mc-host 10.0.0.5
+
+Specifies the hostname/IP address of a node
+
+=item --mc-port (optional)
+
+	--mc-port 5000
+
+Specifies the port that application is hosted on, if not specified, will attempt to figure it out.
+
+=item --mc-type (optional)
+
+	--mc-type http
+	
+Specifies scheme that is used for your node (http/https), if not specified, will attempt to figure it out.
+
+=item --mc-alias (optional)
+ 
+ 	--mc-alias MyAppServer1,AppServer1
+ 	
+Virtual host alias that will be added to httpd. Defaults to StarmanServer
+
+=item --mc-domain (optional)
+
+	--mc-domain MyGroup
+	
+Domain/Load balancer name
+
+=item --mc-debug (optional)
+
+	--mc-debug 1
+
+Display L<Net::MCMP> debug information, and show configuration options of mod_cluster in the logs.
+
+=item Other Options
+
+Other options are available as described in L<starman> and L<plackup>
+
+=back
+
+Starman::ModCluster passes through other options given to L<Starman> and L<Plack::Runner>, the
+common backend that L<starmna> and L<plackup> uses, so the most options explained in
+C<plackup -h> such as C<--access-log> or C<--daemonize> works fine in
+starman-modcluster too.
+
+=cut
+
+=back
+
+=head1 SEE ALSO
+
+L<starman> L<Starman> L<plackup>
+
+=cut
