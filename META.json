@@ -35,11 +35,10 @@
             "IO::Socket::Multicast" : "0",
             "IPC::Shareable" : "0",
             "Net::MCMP" : "0",
-            "Starman" : "0",
-            "Text::SimpleTable" : "0"
+            "Starman" : "0"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.03"
+   "version" : "0.04"
 }
