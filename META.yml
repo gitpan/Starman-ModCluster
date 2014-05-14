@@ -22,4 +22,4 @@ requires:
   IPC::Shareable: 0
   Net::MCMP: 0
   Starman: 0
-version: 0.05
+version: 0.06
